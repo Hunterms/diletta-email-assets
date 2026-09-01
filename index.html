@@ -1,14 +1,85 @@
-<!doctype html><meta charset="utf-8"><title>Diletta · assets de e-mail</title>
-<style>body{margin:0;background:#08050A;color:#F5F0F0;font:14px/1.6 -apple-system,Inter,sans-serif;padding:40px}
-h1{font-size:18px;letter-spacing:2px;text-transform:uppercase;color:#E60000}
-li{margin:14px 0}code{color:#BAB2B5}img{display:block;max-width:520px;margin:8px 0;border-radius:8px}</style>
-<h1>Diletta · assets de e-mail</h1>
-<p>Imagens da sequência Febraban. Servidas daqui para não depender de host grátis:
-o ImgBB bloqueia embed em e-mail no plano gratuito e o freeimage.host cai.</p>
-<ul>
-<li><code>banner-600.png</code><img src="banner-600.png"></li>
-<li><code>card-letti-520.jpg</code><img src="card-letti-520.jpg"></li>
-<li><code>card-coreflow-520.jpg</code><img src="card-coreflow-520.jpg"></li>
-<li><code>video-capa-520.jpg</code><img src="video-capa-520.jpg"></li>
-<li><code>wordmark-220.jpg</code><img src="wordmark-220.jpg"></li>
-</ul>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diletta · e-mail pós-Febraban</title>
+<style>
+:root{--bg:#08050A;--bg2:#0E0A0C;--li:#1F1820;--t1:#F5F0F0;--t2:#BAB2B5;--t3:#7A7378;--red:#E60000}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);
+  font:15px/1.65 -apple-system,BlinkMacSystemFont,Inter,Segoe UI,sans-serif}
+.w{max-width:920px;margin:0 auto;padding:48px 24px 80px}
+h1{font-size:13px;letter-spacing:2.4px;text-transform:uppercase;color:var(--red);margin:0 0 6px}
+h2{font-size:26px;line-height:1.25;margin:0 0 18px;letter-spacing:-.4px}
+p{color:var(--t2);margin:0 0 16px}
+.card{background:var(--bg2);border:1px solid var(--li);border-radius:14px;padding:22px;margin:22px 0}
+label{display:block;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);margin:14px 0 6px}
+input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--li);
+  background:#15101A;color:var(--t1);font:inherit}
+button{appearance:none;border:0;border-radius:999px;background:var(--red);color:#fff;
+  font:700 14px/1 inherit;letter-spacing:.7px;text-transform:uppercase;padding:16px 30px;
+  cursor:pointer;margin-top:20px}
+button:disabled{opacity:.5;cursor:default}
+.ok{color:#22C55E;font-size:13px;margin-left:14px}
+iframe{width:100%;height:820px;border:1px solid var(--li);border-radius:14px;background:#000}
+code{color:var(--t2);font-size:13px}
+ul{color:var(--t2);padding-left:18px}li{margin:6px 0}
+a{color:#FF3D3D}
+</style></head><body><div class="w">
+
+<h1>Diletta · Febraban Tech 2026</h1>
+<h2>E-mail 1 · os produtos e a demo em 58s</h2>
+<p>Preenche os três campos, clica em copiar, e cola no disparador. As imagens já
+apontam para este mesmo endereço, então elas aparecem em qualquer cliente — sem
+depender de host grátis, que foi o que quebrou antes.</p>
+
+<div class="card">
+  <label for="rem">Remetente</label>
+  <input id="rem" value="Hunter Soares do Carmo">
+  <label for="car">Cargo</label>
+  <input id="car" value="Design · Diletta Solutions">
+  <label for="cel">Celular</label>
+  <input id="cel" value="(19) 99999-9999">
+  <button id="b" disabled>Copiar HTML</button><span class="ok" id="s"></span>
+</div>
+
+<h1>Como está ficando</h1>
+<iframe id="pv" title="pré-visualização"></iframe>
+
+<div class="card">
+  <h1>As imagens</h1>
+  <ul>
+    <li><code>banner-600.png</code> — faixa do topo, 1200×160 servido a 600</li>
+    <li><code>card-letti-520.jpg</code> — cartão da Letti, 1040×842 servido a 520</li>
+    <li><code>card-coreflow-520.jpg</code> — cartão do Core Flow, 1040×728 servido a 520</li>
+    <li><code>video-capa-520.jpg</code> — capa do vídeo, 1040×585 servido a 520</li>
+    <li><code>wordmark-220.jpg</code> — símbolo do rodapé, 520×290 servido a 220</li>
+  </ul>
+  <p>Todas em 2× da largura de exibição: é o que deixa nítido no celular retina.
+  Servir em 1× foi o que pixelizou a primeira versão.</p>
+</div>
+
+<script>
+let bruto = '';
+const $ = id => document.getElementById(id);
+function montar(){
+  return bruto.replaceAll('{{remetente}}', $('rem').value)
+              .replaceAll('{{cargo}}', $('car').value)
+              .replaceAll('{{celular}}', $('cel').value);
+}
+function pintar(){ $('pv').srcdoc = montar(); }
+fetch('email.html').then(r => r.text()).then(t => {
+  bruto = t; $('b').disabled = false; pintar();
+});
+['rem','car','cel'].forEach(id => $(id).addEventListener('input', pintar));
+$('b').addEventListener('click', async () => {
+  const html = montar();
+  try { await navigator.clipboard.writeText(html); }
+  catch (e) {
+    // Safari antigo e contexto sem permissão: cai para o textarea escondido.
+    const t = document.createElement('textarea');
+    t.value = html; document.body.appendChild(t); t.select();
+    document.execCommand('copy'); t.remove();
+  }
+  $('s').textContent = 'copiado · ' + html.length.toLocaleString('pt-BR') + ' caracteres';
+});
+</script>
+</div></body></html>
