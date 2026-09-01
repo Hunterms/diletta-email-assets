@@ -18,7 +18,10 @@ button{appearance:none;border:0;border-radius:999px;background:var(--red);color:
   font:700 14px/1 inherit;letter-spacing:.7px;text-transform:uppercase;padding:16px 30px;
   cursor:pointer;margin-top:20px}
 button:disabled{opacity:.5;cursor:default}
-.ok{color:#22C55E;font-size:13px;margin-left:14px}
+button.alt{background:transparent;border:1px solid var(--li);color:var(--t2);margin-left:10px}
+button.alt:hover:not(:disabled){border-color:var(--red);color:var(--t1)}
+.dica{font-size:13.5px;color:var(--t3);margin:16px 0 0}
+.ok{color:#22C55E;font-size:13px;margin-top:14px;min-height:18px}
 iframe{width:100%;height:820px;border:1px solid var(--li);border-radius:14px;background:#000}
 code{color:var(--t2);font-size:13px}
 ul{color:var(--t2);padding-left:18px}li{margin:6px 0}
@@ -38,7 +41,13 @@ depender de host grátis, que foi o que quebrou antes.</p>
   <input id="car" value="Design · Diletta Solutions">
   <label for="cel">Celular</label>
   <input id="cel" value="(19) 99999-9999">
-  <button id="b" disabled>Copiar HTML</button><span class="ok" id="s"></span>
+  <button id="b" disabled>Copiar para o e-mail</button>
+  <button id="bc" class="alt" disabled>Copiar o código</button>
+  <div class="ok" id="s"></div>
+  <p class="dica">O primeiro põe o e-mail <strong>já formatado</strong> na área de
+  transferência: cola direto na janela de composição do Gmail, do Outlook ou do Apple
+  Mail e ele aparece montado. O segundo copia o código-fonte, que é o que ferramenta
+  de disparo pede.</p>
 </div>
 
 <div class="card">
@@ -74,19 +83,57 @@ function montar(){
 }
 function pintar(){ $('pv').srcdoc = montar(); }
 fetch('email.html').then(r => r.text()).then(t => {
-  bruto = t; $('b').disabled = false; pintar();
+  bruto = t; $('b').disabled = false; $('bc').disabled = false; pintar();
 });
 ['rem','car','cel'].forEach(id => $(id).addEventListener('input', pintar));
+// ── copiar FORMATADO ────────────────────────────────────────────────────────
+// Cliente de e-mail padrão não aceita código: colar o fonte na janela de
+// composição mostra as tags como texto. O que funciona é pôr HTML RICO no
+// clipboard. Caminho moderno: ClipboardItem com o tipo text/html. Caminho de
+// reserva, que funciona em tudo: renderiza num div fora da tela, seleciona e
+// manda copiar — o navegador serializa a seleção como HTML sozinho.
+async function copiarFormatado(html) {
+  const corpo = html.replace(/^[\s\S]*?<body[^>]*>/i, '').replace(/<\/body>[\s\S]*$/i, '');
+  try {
+    const item = new ClipboardItem({
+      'text/html': new Blob([html], {type: 'text/html'}),
+      'text/plain': new Blob(['Abra em hunterms.github.io/diletta-email-assets/email.html'],
+                             {type: 'text/plain'}),
+    });
+    await navigator.clipboard.write([item]);
+    return 'moderno';
+  } catch (e) {
+    const d = document.createElement('div');
+    d.setAttribute('style', 'position:fixed;left:-99999px;top:0;white-space:normal');
+    d.innerHTML = corpo;
+    document.body.appendChild(d);
+    const r = document.createRange(); r.selectNodeContents(d);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    const ok = document.execCommand('copy');
+    sel.removeAllRanges(); d.remove();
+    if (!ok) throw e;
+    return 'reserva';
+  }
+}
+
 $('b').addEventListener('click', async () => {
+  try {
+    const via = await copiarFormatado(montar());
+    $('s').textContent = 'copiado formatado (' + via + ') — cola no Gmail, Outlook ou Apple Mail';
+  } catch (e) {
+    $('s').textContent = 'o navegador não deixou copiar. Selecione a pré-visualização à mão (⌘A, ⌘C).';
+  }
+});
+
+$('bc').addEventListener('click', async () => {
   const html = montar();
   try { await navigator.clipboard.writeText(html); }
   catch (e) {
-    // Safari antigo e contexto sem permissão: cai para o textarea escondido.
     const t = document.createElement('textarea');
     t.value = html; document.body.appendChild(t); t.select();
     document.execCommand('copy'); t.remove();
   }
-  $('s').textContent = 'copiado · ' + html.length.toLocaleString('pt-BR') + ' caracteres';
+  $('s').textContent = 'código copiado · ' + html.length.toLocaleString('pt-BR') + ' caracteres';
 });
 </script>
 </div></body></html>
