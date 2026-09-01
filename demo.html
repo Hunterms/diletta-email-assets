@@ -21,6 +21,15 @@ video{width:100%;border-radius:14px;background:#000;display:block;border:1px sol
 .cta{display:inline-block;background:var(--red);color:#fff;text-decoration:none;border-radius:999px;
   padding:17px 36px;font-weight:700;font-size:15px;letter-spacing:.7px;text-transform:uppercase;margin-top:8px}
 .sub{font-size:13px;color:var(--t3);margin-top:14px}
+.palco{position:relative}
+/* Navegador só deixa começar sozinho se estiver mudo. Então ele começa mudo — o
+   filme é legendado e se sustenta sem som — e o botão oferece o som em um toque.
+   Sem isto o lead cai numa imagem parada, e imagem parada perde gente. */
+#som{position:absolute;right:14px;bottom:64px;background:rgba(8,5,10,.82);
+  border:1px solid rgba(245,240,240,.28);color:var(--t1);border-radius:999px;
+  padding:11px 20px;font:600 13px/1 inherit;letter-spacing:.5px;cursor:pointer;
+  backdrop-filter:blur(6px)}
+#som:hover{border-color:var(--red)}
 ul{color:var(--t2);padding-left:20px}li{margin:8px 0}
 .foot{border-top:1px solid var(--li);margin-top:54px;padding-top:26px;font-size:13px;color:var(--t3)}
 a{color:#FF3D3D}
@@ -36,11 +45,14 @@ a{color:#FF3D3D}
   resolvendo extrato e boleto de um lado, e o Core Flow acendendo bloco por bloco do
   outro. Cinquenta e oito segundos, legendado — dá para ver sem som.</p>
 
-  <video controls preload="metadata" playsinline poster="video-poster.jpg">
+  <div class="palco">
+  <video id="v" controls autoplay muted playsinline preload="metadata" poster="video-poster.jpg">
     <source src="video-letti-coreflow-58s.mp4" type="video/mp4">
     O seu navegador não toca este vídeo.
     <a href="video-letti-coreflow-58s.mp4">Baixar o arquivo</a>.
   </video>
+  <button id="som" hidden>Ativar som</button>
+  </div>
 
   <p class="sub">1920×1080 · 58s · 9 MB</p>
 
@@ -60,4 +72,16 @@ a{color:#FF3D3D}
   <div class="foot">Diletta Solutions ·
     <a href="https://dilettasolutions.com">dilettasolutions.com</a></div>
 </div>
+<script>
+  const v = document.getElementById('v'), b = document.getElementById('som');
+  // Se o navegador recusar o autoplay (Outlook corporativo faz isso), o poster
+  // fica e o play nativo resolve — nada quebra, só não começa sozinho.
+  v.play().catch(() => {});
+  const mostrar = () => { b.hidden = !v.muted || v.paused; };
+  v.addEventListener('playing', mostrar);
+  v.addEventListener('pause', mostrar);
+  v.addEventListener('volumechange', mostrar);
+  b.addEventListener('click', () => { v.muted = false; v.play(); mostrar(); });
+  mostrar();
+</script>
 </body></html>
